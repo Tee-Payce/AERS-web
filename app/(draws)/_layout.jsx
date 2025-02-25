@@ -75,6 +75,16 @@ export default function Layout() {
             
           }}
         />
+        <Drawer.Screen
+          name="modal" 
+          options={{
+            presentation: 'transparentModal',
+          animation: 'fade',
+          headerShown: false,
+            title: 'Video Playback',
+            
+          }}
+        />
        
       </Drawer>
     </GestureHandlerRootView>

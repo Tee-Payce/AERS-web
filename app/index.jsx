@@ -4,14 +4,14 @@ import { Link, Redirect, router } from "expo-router";
 import React from "react";
 import { Text, View, StyleSheet } from "react-native";
 import { SafeAreaView } from 'react-native-safe-area-context';
-//import 'react-native-polyfill-globals/auto';
+import 'react-native-polyfill-globals/auto';
 
 
 
 const App = () => {
-  // const {isLoading, isLoggedIn } = useGlobalContext();
+  const {isLoading, isLoggedIn } = useGlobalContext();
 
-  // if(!isLoading && isLoggedIn) return <Redirect href='/find'/>
+  if(!isLoading && isLoggedIn) return <Redirect href='/find'/>
 
   return (
     <SafeAreaView style={styles.container}>
@@ -22,7 +22,7 @@ const App = () => {
     </Text>
     <CustomButton
           title="continue to App"
-          handlePress={() => router.push('/sign-up')}
+          handlePress={() => router.push('/sign-in')}
           containerStyles={styles.customButtonContainer}
           textStyles={styles.customButtonText} isLoading={undefined}          />
           <Link href="/find" style={styles.link}>

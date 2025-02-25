@@ -32,7 +32,16 @@ const RootLayout = () => {
     
       <Stack.Screen name='(draws)' options={{headerShown: false}}/>
       <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-     
+      <Stack.Screen
+          name="modal" 
+          options={{
+            presentation: 'transparentModal',
+          animation: 'fade',
+          headerShown: false,
+            title: 'Video Playback',
+            
+          }}
+        />
     </Stack>
     <StatusBar style='dark'/>
     </GlobalProvider>
