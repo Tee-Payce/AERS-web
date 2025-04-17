@@ -1,4 +1,4 @@
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { Alert, ImageBackground, ScrollView, StyleSheet, Text, View } from 'react-native'
 import React, { useState } from 'react'
 import { signIn } from '../../lib/appwrite'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -7,6 +7,8 @@ import FormField from '../../components/FormField'
 import CustomButton from '../../components/CustomButton'
 import { Link, router } from 'expo-router'
 import { useGlobalContext } from '../../context/GlobalProvider'
+
+
 
 const SignIn = () => {
   const [form, setForm] = useState({
@@ -27,7 +29,7 @@ const SignIn = () => {
       await signIn(form.email)
       setEmail(form.email)
       console.log("Navigating to App")
-      router.push('/messages')
+      router.push('/dashboard')
       console.log("Navigation complete")
       // Navigate to the home page
     } catch (error) {
@@ -39,7 +41,7 @@ const SignIn = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+    <ImageBackground  style={styles.container} source={require('../../assets/images/background-mobile.png')} resizeMode="cover" >
         <View style={styles.contentContainer}>
           <Text style={styles.title}>
             Sign In <FontAwesome size={28} name="sign-in" color="#FF9001" />
@@ -65,7 +67,7 @@ const SignIn = () => {
             HOME
           </Link>
         </View>
-      </ScrollView>
+      </ImageBackground>
     </SafeAreaView>
   )
 }
@@ -74,8 +76,9 @@ export default SignIn
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#161630',
+    width: '100%',
     flex: 1,
+    height: 'auto'
    
   
   },
@@ -89,6 +92,11 @@ const styles = StyleSheet.create({
     marginLeft:250,
     backgroundColor: '#161622',
     borderRadius:20,
+    shadowColor: '#000',
+    shadowOpacity: 0.7,
+    shadowOffset: { width: 3, height: 7 },
+    shadowRadius: 20,
+    elevation: 13,
   },
   title: {
     fontSize: 24,

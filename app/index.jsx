@@ -2,9 +2,10 @@ import CustomButton from "@/components/CustomButton";
 import { useGlobalContext } from "@/context/GlobalProvider";
 import { Link, Redirect, router } from "expo-router";
 import React from "react";
-import { Text, View, StyleSheet } from "react-native";
+import { Text, View, StyleSheet, Image, ImageBackground } from "react-native";
 import { SafeAreaView } from 'react-native-safe-area-context';
-import 'react-native-polyfill-globals/auto';
+//import 'react-native-polyfill-globals/auto';
+import 'leaflet/dist/leaflet.css';
 
 
 
@@ -14,12 +15,12 @@ const App = () => {
   if(!isLoading && isLoggedIn) return <Redirect href='/find'/>
 
   return (
-    <SafeAreaView style={styles.container}>
-     
+    
+    <ImageBackground  style={styles.container} source={require('../assets/images/background-mobile.png')} resizeMode="cover" >
+
         <View style={styles.contentContainer}>
-          <Text style={styles.title}>AERS
-     
-    </Text>
+                  <Image source={require('../assets/images/logo.png')} resizeMode="contain" style={{width: 120, height: 100}}/>
+
     <CustomButton
           title="continue to App"
           handlePress={() => router.push('/sign-in')}
@@ -29,17 +30,20 @@ const App = () => {
             Jump to locate
           </Link>
     </View>
-    </SafeAreaView>
+    </ImageBackground>
+  
   );
 }
 export default App
 
-const styles = StyleSheet.create({
+export const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#161630',
+  
     justifyContent: 'center',
     alignItems: 'center',
     flex: 1,
+    width: '100%',
+    height: 'auto'
   },
  
   contentContainer: {
@@ -51,6 +55,11 @@ const styles = StyleSheet.create({
     borderCurve:'circular',
     borderRadius: 20,
     paddingHorizontal: 16,
+    shadowColor: '#000',
+        shadowOpacity: 0.7,
+        shadowOffset: { width: 3, height: 7 },
+        shadowRadius: 20,
+        elevation: 13,
   },
   title: {
     fontSize: 36,

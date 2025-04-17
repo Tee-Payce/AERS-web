@@ -3,7 +3,7 @@ import React from 'react'
 import Sidebar from '../../components/Sidebar'
 import { ImageBackground } from 'react-native-web'
 
-const Settings = () => {
+const Analysis = () => {
   return (
     <View style={styles.container}>
     {/* Sidebar Section */}
@@ -18,14 +18,14 @@ const Settings = () => {
                                   source={require('../../assets/images/background-mobile-45.png')} 
                                   resizeMode="cover"
                               >
-      <Text>Settings</Text>
+      <Text>analysis</Text>
       </ImageBackground>
     </View>
     </View>
   )
 }
 
-export default Settings
+export default Analysis
 
 const styles = StyleSheet.create({
   container: {

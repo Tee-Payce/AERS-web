@@ -1,5 +1,5 @@
-import { View, Text, FlatList, TextInput, Button, ScrollView, StyleSheet, Alert } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import { View, Text, FlatList, TextInput, Button, ScrollView, StyleSheet, Alert, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
 import { useSearchParams } from 'expo-router/build/hooks';
 import { client ,databases, config, sendResponse } from '../../lib/appwrite';
 import FormField from '../../components/FormField';
@@ -9,6 +9,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Video} from 'expo-av'; // Import Video component
 import { useEvent } from 'expo';
 import { Link, router } from 'expo-router'
+import { ImageBackground } from 'react-native-web';
+import Sidebar from '../../components/Sidebar';
+
 
 const Chat = () => {
   const params = useSearchParams();
@@ -16,6 +19,7 @@ const Chat = () => {
   const chatId = params.get('chatId'); 
   const urlSenderId = params.get('senderId');
   const urlResponderId = params.get('responderId');
+  
 
   const [form, setForm] = useState({ messageBody: '' });
   const [messages, setMessages] = useState([]);
@@ -23,8 +27,15 @@ const Chat = () => {
   const [senderName, setSenderName] = useState('');
   
   
+  const scrollViewRef = useRef(null);
 
-
+  useEffect(() => {
+    if (scrollViewRef.current) {
+      scrollViewRef.current.scrollToEnd({ animated: true });
+    }
+  }, [messages]);
+  
+ 
   useEffect(() => {
     fetchMessages();
     fetchSenderName();
@@ -80,6 +91,7 @@ const Chat = () => {
         userId: urlSenderId,
         responderId: urlResponderId,
         created: new Date().toISOString(),
+        isRead: false, 
       };
 
       setMessages((prevMessages) => [...prevMessages, newMessage]);
@@ -93,9 +105,39 @@ const Chat = () => {
       setForm({ messageBody: '' });
     }
   };
+  const isLinkExpired = (created) => {
+    const messageTime = new Date(created);
+    const currentTime = new Date();
+    const hoursDifference = (currentTime - messageTime) / (1000 * 60 * 60); // Difference in hours
+    return hoursDifference > 2; // Check if more than 2 hours have passed
+  };
+  const SubSidebar = ({ senderName }) => (
+    <View style={styles.subSidebar}>
+      <Text style={styles.subSidebarTitle}>Chatting with</Text>
+      <Text style={styles.subSidebarText}>{senderName}</Text>
+    </View>
+  );
+  {/* Sub Sidebar (Shows Sender Name) */}
+    <View style={styles.subSidebarContainer}>
+    <SubSidebar senderName={senderName} />
+  </View>  
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
+            {/* Sidebar Section */}
+            <View style={styles.sidebarContainer}>
+                <Sidebar />
+            </View>
+            {/* Sub Sidebar (Shows Sender Name) */}
+         <View style={styles.subSidebarContainer}>
+             <SubSidebar senderName={senderName} />
+         </View>
+
+            {/* Content Section */}
+            <ImageBackground style={styles.scrollView}  source={require('../../assets/images/background-mobile-15.png')} resizeMode="cover">
+
+            <View style={styles.contentContainer}>
+              <View style={{ backgroundColor: '#161626'}}>
       <Text style={styles.title}>
         <FontAwesome size={24} name="comments-o" color='#ff8c00' />
           Chat with Reporter
@@ -107,19 +149,60 @@ const Chat = () => {
           <Text style={styles.notificationText}>{notification}</Text>
         </View>
       ) : null}
-
+         </View>
       <View style={styles.innerContainer}>
-        <ScrollView contentContainerStyle={styles.scrollView}>
-          <View style={styles.messagesContainer}>
+
+      <ScrollView
+           ref={scrollViewRef}
+          contentContainerStyle={styles.scrollView2}
+           >
+
+          
             {messages.map((msg, index) => {
               const isSenderStyle = msg.isResponderSender === isSender;
-               const videoUrl = msg.hasVideoUrl ? `http://192.168.1.115:8085/uploads/${msg.videoUriId}` : null;
+               const videoUrl = msg.hasVideoUrl ? `http://192.168.100.20:8085/uploads/${msg.videoUriId}` : null;
               //const videoUrl = 'http://192.168.1.115:8085/uploads/1740200212824-video_1740200211720_678f9ea3003bd9fd96b6_678a1a180014f1a82c72.mp4'; 
+              const isLocationMessage = msg.messageBody.startsWith('Live Location:');
+              let locationCoords = null;
+  if (isLocationMessage) {
+    // Extract the URL from the message body
+    const urlMatch = msg.messageBody.match(/https?:\/\/[^\s]+/);
+    if (urlMatch) {
+      const url = urlMatch[0];
+      const urlParams = new URL(url);
+      const queryParams = new URLSearchParams(urlParams.search);
+      const coordinates = queryParams.get('q');
+
+      // Split coordinates if they are in the form of "lat,lng"
+      locationCoords = coordinates ? coordinates.split(',') : null;
+    }
+  }
 
               return (
                 <View key={index} style={[styles.messageContainer, isSenderStyle ? styles.senderMessage : styles.responderMessage]}>
-                  <Text style={styles.messageText}>{msg.messageBody}</Text>
+                {isLocationMessage ? (
+                    isLinkExpired(msg.created) ? (
+                      <Text style={styles.expiredText}>Link expired</Text>
+                    ) : (
+                      <TouchableOpacity
+                        onPress={() => router.push({
+                          pathname: '/find',
+                          params: {
+                            senderLat: locationCoords[0],
+                            senderLng: locationCoords[1],
+                            responderId: urlResponderId,
+                          },
+                        })}
+                      >
+                        <Text style={styles.locationText}>📍 View Live Location </Text>
+                        <Text>{msg.messageBody}</Text>
+                      </TouchableOpacity>
+                     
+                    )
                   
+                  ) : (
+                  <Text style={styles.messageText}>{msg.messageBody}</Text>
+                  )}
                   {msg.hasVideoUrl && videoUrl && (
                     
                     <View style={styles.containers}>
@@ -131,7 +214,7 @@ const Chat = () => {
                      console.log('passing video', videoUrl)
                     }} >watch full video</Text>
                   <Video
-          source={{ uri: videoUrl }}
+                           source={{ uri: videoUrl }}
            style={styles.video}
            useNativeControls
           resizeMode='potrait'
@@ -145,12 +228,16 @@ const Chat = () => {
                   )}
 
                   <Text style={styles.timestamp}>{new Date(msg.created).toLocaleTimeString()}</Text>
+
                 </View>
+
               );
             })}
-          </View>
-        </ScrollView>
+          
+            </ScrollView>
 
+         
+       
         <View style={styles.inputContainer}>
           <FormField
             title=""
@@ -164,7 +251,9 @@ const Chat = () => {
           </Text>
         </View>
       </View>
-    </SafeAreaView>
+    </View>
+    </ImageBackground>
+    </View>
   );
 };
 
@@ -172,9 +261,20 @@ export default Chat;
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#161622',
-    flex: 1,
-  },
+        flex: 1,
+        flexDirection: 'row', // Sidebar & content adjacent
+        width: '100%',
+        height: '100vh',
+        backgroundColor: '#161626'
+    },
+    sidebarContainer: {
+        width: 250, // Fixed sidebar width
+        backgroundColor: '#1E1E2D',
+    },
+    contentContainer: {
+        flex: 1, // Take remaining space
+        flexDirection: 'column', 
+    },
   containers:{
     flex:1,
     alignItems: 'center',
@@ -187,6 +287,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontFamily: 'Poppins-SemiBold',
     marginLeft: 40,
+    backgroundColor:'#161626'
   },
   responderName: {
     color: '#ff8c00',
@@ -196,6 +297,11 @@ const styles = StyleSheet.create({
   scrollView: {
     flexGrow: 1,
     justifyContent: 'flex-end',
+  },
+  scrollView2: {
+    flexGrow: 1,
+    justifyContent: 'flex-end',
+    padding: 10,
   },
   messagesContainer: {
     flex: 1,
@@ -231,6 +337,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderColor: '#ccc',
     padding: 10,
+    backgroundColor: '#161626'
   },
   inputField: {
     flex: 1,
@@ -266,5 +373,24 @@ const styles = StyleSheet.create({
   },
   controlsContainer: {
     padding: 10,
+  },
+  subSidebarContainer: {
+    width: 200,
+    backgroundColor: '#2E2E40',
+    padding: 10,
+  },
+  subSidebar: {
+    alignItems: 'center',
+    padding: 10,
+  },
+  subSidebarTitle: {
+    fontSize: 18,
+    color: '#ff8c00',
+    fontWeight: 'bold',
+  },
+  subSidebarText: {
+    fontSize: 16,
+    color: 'white',
+    marginTop: 5,
   },
 });

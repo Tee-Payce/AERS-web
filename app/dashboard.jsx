@@ -1,9 +1,9 @@
 import { StyleSheet, Text, View } from 'react-native'
 import React from 'react'
-import Sidebar from '../../components/Sidebar'
+import Sidebar from '../components/Sidebar'
 import { ImageBackground } from 'react-native-web'
 
-const Settings = () => {
+const Dashboard = () => {
   return (
     <View style={styles.container}>
     {/* Sidebar Section */}
@@ -15,17 +15,17 @@ const Settings = () => {
               <View style={styles.contentContainer}>
               <ImageBackground 
                                   style={styles.background} 
-                                  source={require('../../assets/images/background-mobile-45.png')} 
+                                  source={require('../assets/images/background-mobile-45.png')} 
                                   resizeMode="cover"
                               >
-      <Text>Settings</Text>
+      <Text>Dashboard</Text>
       </ImageBackground>
     </View>
     </View>
   )
 }
 
-export default Settings
+export default Dashboard;
 
 const styles = StyleSheet.create({
   container: {
